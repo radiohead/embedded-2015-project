@@ -1,8 +1,10 @@
 import math
+import ctypes
 
 class TemperatureSensor(object):
   def __init__(self, sensor):
-    if (self.sensor.bcm2835_init() == 0):
+    self.sensor = sensor
+    if (0 == self.sensor.bcm2835_init()):
       raise Exception("Sensor driver init failed")
 
     self.init_pressure()
@@ -27,7 +29,7 @@ class TemperatureSensor(object):
     return self.sensor.MPL3115A2_Read_Temp()
 
   def read_altitude(self):
-    return sensor.MPL3115A2_Read_Alt()
+    return self.sensor.MPL3115A2_Read_Alt()
 
   def get_temperature(self):
     t = self.read_temperature()
@@ -50,7 +52,7 @@ class TemperatureSensor(object):
     else:
       alt_l = alt_l
 
-    return (self.twos_to_int(alt_m, 18))
+    return (self.twos_to_int(alt_m, 18) * 0.00750061683)
 
   def twos_to_int(self, val, len):
     # Convert twos compliment to integer

@@ -5,8 +5,8 @@ import logging
 
 import redis
 import json
-import util
 
+from util import temperature_sensor
 from daemon import runner
 
 class App(object):
@@ -23,9 +23,10 @@ class App(object):
 
       self.redis_conn = redis.Redis(host=self.config['redis_host'], port=self.config['redis_port'], db=0)
       self.sensor_lib = ctypes.CDLL(self.config['sensor_lib_path'])
-      self.temperature_sensor = util.TemperatureSensor(self.sensor_lib)
+      self.temperature_sensor = temperature_sensor.TemperatureSensor(self.sensor_lib)
     else:
       self.config_file = None
+      self.sensor_lib = None
 
     self.logger = logging.getLogger("sensor-daemon-log")
     self.logger.setLevel(logging.DEBUG)
@@ -38,8 +39,8 @@ class App(object):
   def run(self):
     while True:
       try:
-        self.logger.info('Temperature: ' + self.temperature_sensor.get_temperature())
-        self.logger.info('Pressure: ' + self.temperature_sensor.get_pressure())
+        self.logger.info('Temperature: ' + str(self.temperature_sensor.get_temperature()))
+        self.logger.info('Pressure: ' + str(self.temperature_sensor.get_pressure()))
       except Exception, e:
         self.logger.error(e)
 
@@ -56,5 +57,5 @@ else:
 app = App(config_file_path)
 
 daemon_runner = runner.DaemonRunner(app)
-daemon_runner.daemon_context.files_preserve = [app.log_handler.stream, app.config_file]
+daemon_runner.daemon_context.files_preserve = [app.log_handler.stream, app.config_file, app.sensor_lib]
 daemon_runner.do_action()
