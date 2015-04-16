@@ -1,0 +1,5 @@
+{
+  "sensor_lib_path" : "/home/nox/Projects/embedded-2015-project/sensor-daemon/deps/sensor.so",
+  "redis_host" : "localhost",
+  "redis_port" : 6379
+}
