@@ -23,10 +23,10 @@ class App(object):
       self.config_file = open(config_file_path)
       self.config = json.loads(self.config_file.read())
 
-      enable_debug = self.config['enable_debug'] || False
-      redis_port = self.config['redis_port'] || 6379
-      redis_host = self.config['redis_host'] || 'localhost'
-      redis_db = self.config['redis_db'] || 0
+      enable_debug = self.config['enable_debug']
+      redis_port = self.config['redis_port']
+      redis_host = self.config['redis_host']
+      redis_db = self.config['redis_db']
 
       self.redis = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
       self.sensor_lib = ctypes.CDLL(self.config['sensor_lib_path'])
@@ -40,7 +40,7 @@ class App(object):
     if enable_debug:
       self.logger.setLevel(logging.DEBUG)
     else:
-      self.logger.setLevel(logging.ERROR)
+      self.logger.setLevel(logging.WARN)
 
     formatter = logging.Formatter("%(asctime)s: %(levelname)s %(message)s")
     self.log_handler = logging.FileHandler("/var/log/sensor-daemon.log")
@@ -53,22 +53,18 @@ class App(object):
         current_temperature = self.temperature_sensor.get_temperature()
         current_pressure = self.temperature_sensor.get_pressure()
 
-        self.redis.multi()
         self.redis.hset('temperature', time.time(), current_temperature)
         self.redis.hset('pressure', time.time(), current_pressure)
 
-        avg_temperature = reduce(lambda acc, t: acc + t, map(lambda t: float(t), self.redis.hvals('temperature')))
-        avg_pressure = reduce(lambda acc, t: acc + t, map(lambda t: float(t), self.redis.hvals('pressure')))
+        avg_temperature = reduce(lambda acc, t: acc + t, map(lambda t: float(t), self.redis.hvals('temperature'))) / int(self.redis.hlen('temperature'))
+        avg_pressure = reduce(lambda acc, t: acc + t, map(lambda t: float(t), self.redis.hvals('pressure'))) / int(self.redis.hlen('pressure'))
 
         self.redis.set('avg_temperature', avg_temperature)
         self.redis.set('avg_pressure', avg_pressure)
-        transaction_successful = self.redis.execute()
-
-        transaction_successful ? self.logger.debug('Transaction successful!') : self.logger.debug('Transaction failed!')
       except Exception, e:
         self.logger.error(e)
 
-      time.sleep(1)
+      time.sleep(5)
 
 if sys.argv[1] == 'start':
   try:
