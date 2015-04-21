@@ -21,7 +21,11 @@ class App(object):
       self.config_file = open(config_file_path)
       self.config = json.loads(self.config_file.read())
 
-      self.redis_conn = redis.Redis(host=self.config['redis_host'], port=self.config['redis_port'], db=0)
+      redis_port = self.config['redis_port'] || 6379
+      redis_host = self.config['redis_host'] || 'localhost'
+      redis_db = self.config['redis_db'] || 0
+
+      self.redis = redis.Redis(host = redis_host, port = redis_port, db = redis_db)
       self.sensor_lib = ctypes.CDLL(self.config['sensor_lib_path'])
       self.temperature_sensor = temperature_sensor.TemperatureSensor(self.sensor_lib)
     else:
@@ -39,8 +43,19 @@ class App(object):
   def run(self):
     while True:
       try:
-        self.logger.info('Temperature: ' + str(self.temperature_sensor.get_temperature()))
-        self.logger.info('Pressure: ' + str(self.temperature_sensor.get_pressure()))
+        current_temperature = self.temperature_sensor.get_temperature()
+        current_pressure = self.temperature_sensor.get_pressure()
+
+        self.redis.multi()
+        self.redis.hset('temperature', time.time(), current_temperature)
+        self.redis.hset('pressure', time.time(), current_pressure)
+
+        avg_temperature = reduce(lambda acc, t: acc + t, map(lambda t: float(t), self.redis.hvals('temperature')))
+        avg_pressure = reduce(lambda acc, t: acc + t, map(lambda t: float(t), self.redis.hvals('pressure')))
+
+        self.redis.set('avg_temperature', avg_temperature)
+        self.redis.set('avg_pressure', avg_pressure)
+        self.redis.execute()
       except Exception, e:
         self.logger.error(e)
 
