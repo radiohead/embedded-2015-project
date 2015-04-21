@@ -17,10 +17,13 @@ class App(object):
     self.pidfile_path =  '/var/run/sensor-daemon.pid'
     self.pidfile_timeout = 5
 
+    enable_debug = False
+
     if sys.argv[1] == 'start':
       self.config_file = open(config_file_path)
       self.config = json.loads(self.config_file.read())
 
+      enable_debug = self.config['enable_debug'] || False
       redis_port = self.config['redis_port'] || 6379
       redis_host = self.config['redis_host'] || 'localhost'
       redis_db = self.config['redis_db'] || 0
@@ -33,7 +36,11 @@ class App(object):
       self.sensor_lib = None
 
     self.logger = logging.getLogger("sensor-daemon-log")
-    self.logger.setLevel(logging.DEBUG)
+
+    if enable_debug:
+      self.logger.setLevel(logging.DEBUG)
+    else:
+      self.logger.setLevel(logging.ERROR)
 
     formatter = logging.Formatter("%(asctime)s: %(levelname)s %(message)s")
     self.log_handler = logging.FileHandler("/var/log/sensor-daemon.log")
@@ -55,7 +62,9 @@ class App(object):
 
         self.redis.set('avg_temperature', avg_temperature)
         self.redis.set('avg_pressure', avg_pressure)
-        self.redis.execute()
+        transaction_successful = self.redis.execute()
+
+        transaction_successful ? self.logger.debug('Transaction successful!') : self.logger.debug('Transaction failed!')
       except Exception, e:
         self.logger.error(e)
 
