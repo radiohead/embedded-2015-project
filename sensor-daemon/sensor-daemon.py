@@ -55,8 +55,11 @@ class App(object):
         current_temperature = self.temperature_sensor.get_temperature()
         current_pressure = self.temperature_sensor.get_pressure()
 
-        self.redis.hset('temperature', time.time(), current_temperature)
-        self.redis.hset('pressure', time.time(), current_pressure)
+        if not current_temperature == 0:
+          self.redis.hset('temperature', time.time(), current_temperature)
+
+        if not current_pressure == 0:
+          self.redis.hset('pressure', time.time(), current_pressure)
 
         avg_temperature = reduce(lambda acc, t: acc + t, map(lambda t: float(t), self.redis.hvals('temperature'))) / int(self.redis.hlen('temperature'))
         avg_pressure = reduce(lambda acc, t: acc + t, map(lambda t: float(t), self.redis.hvals('pressure'))) / int(self.redis.hlen('pressure'))
