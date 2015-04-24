@@ -16,12 +16,14 @@ class App(object):
     self.stderr_path = '/dev/stderr'
     self.pidfile_path =  '/var/run/sensor-daemon.pid'
     self.pidfile_timeout = 5
+    self.poll_interval = 10
 
     enable_debug = False
 
     if sys.argv[1] == 'start':
       self.config_file = open(config_file_path)
       self.config = json.loads(self.config_file.read())
+      self.poll_interval = self.config['poll_interval']
 
       enable_debug = self.config['enable_debug']
       redis_port = self.config['redis_port']
@@ -64,7 +66,7 @@ class App(object):
       except Exception, e:
         self.logger.error(e)
 
-      time.sleep(5)
+      time.sleep(10)
 
 if sys.argv[1] == 'start':
   try:
