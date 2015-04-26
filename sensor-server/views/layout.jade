@@ -1,0 +1,49 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/semantic/semantic.min.css')
+    script(type='text/javascript', src='/javascripts/jquery-2.1.3.min.js')
+    script(type='text/javascript', src='/semantic/semantic.min.js')
+    script(type='text/javascript', src='/javascripts/Chart.min.js')
+  body
+    main.ui.page.grid
+      .ui.left.vertical.inverted.labeled.sidebar.menu.visible
+        if active=='index'
+          a.item.active(href='/')
+            i.home.icon
+            | Home
+        else
+          a.item(href='/')
+            i.home.icon
+            | Home
+        if active=='temperature'
+          a.item.active(href='/temperature')
+            i.eyedropper.icon
+            | Temperature
+        else
+          a.item(href='/temperature')
+            i.eyedropper.icon
+            | Temperature
+        if active=='pressure'
+          a.item.active(href='/pressure')
+            i.dashboard.icon
+            | Pressure
+        else
+          a.item(href='/pressure')
+            i.dashboard.icon
+            | Pressure
+        a.item(href='/about')
+          i.users.icon
+          | About
+        a.item(href='/errors')
+          i.bug.icon
+          | Errors
+      .row
+        .column.padding-reset
+          br
+          h1.ui.huge.header #{title}
+          block content
+      //- script.
+      //-   $('.ui.sidebar').sidebar();

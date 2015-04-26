@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  .ui.statistic(style='background-color: '+result.temperature_color+'; border-radius: 100px; width:175px; height:175px; padding-top: 50px;')
+    .value #{Math.round(result.temperature)} °C
+    .label Temperature
+  .ui.statistic(style='background-color: '+result.avg_temperature_color+'; border-radius: 100px; width:175px; height:175px; padding-top: 50px;')
+    .value #{Math.round(result.avg_temperature)} °C
+    .label Average temperature
+  br
+  .ui.statistic(style='background-color: '+result.pressure_color+'; border-radius: 100px; width:175px; height:175px; padding-top: 50px;')
+    .value #{Math.round(result.pressure)}
+    .label Pressure (mmHg)
+  .ui.statistic(style='background-color: '+result.avg_pressure_color+'; border-radius: 100px; width:175px; height:175px; padding-top: 50px;')
+    .value #{Math.round(result.avg_pressure)}
+    .label Average pressure (mmHg)
+  br
+  h3 Last update: #{result.timestamp}

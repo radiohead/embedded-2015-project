@@ -1,0 +1,66 @@
+extends layout
+
+block content
+  canvas(id='myChart', width='900', height='400')
+  div(style='display:none', id='myChartData') #{data}
+  br
+  .ui.statistic(style='background-color: '+result.temperature_color+'; border-radius: 100px; width:175px; height:175px; padding-top: 50px;')
+    .value(id='temperature_value') #{Math.round(result.temperature)} °C
+    .label Temperature
+  .ui.statistic(style='background-color: '+result.avg_temperature_color+'; border-radius: 100px; width:175px; height:175px; padding-top: 50px;')
+    .value(id='avg_temperature_value') #{Math.round(result.avg_temperature)} °C
+    .label Average temperature
+  br
+  script.
+    var ctx = document.getElementById("myChart").getContext("2d");
+    var options = {animationSteps: 15};
+    var data = JSON.parse($('#myChartData').text());
+    var myLineChart = new Chart(ctx).Line(data, options);
+    var last_update_time = data.timestamps.pop();
+
+    var time_converter = function (UNIX_timestamp){
+      var a = new Date(UNIX_timestamp);
+      var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      var year = a.getFullYear();
+      var month = months[a.getMonth()];
+      var date = a.getDate();
+      var hour = a.getHours();
+      var min = a.getMinutes();
+      var sec = a.getSeconds();
+      var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+      return time;
+    };
+
+    var temperature_color = function (value) {
+      value = Math.round(value);
+      if (value < 25) {
+        return 'lightblue';
+      } else if (value < 29) {
+        return 'lightgreen';
+      } else {
+        return '#FFFF33';
+      }
+    };
+
+    var pollServerForData = function () {
+      $.getJSON('/temperature/refresh', function (response) {
+        if (response) {
+          $('#temperature_value').html(response.temperature+' °C');
+          $('#temperature_value').parent().css('background-color', temperature_color(response.temperature));
+          $('#avg_temperature_value').html(response.avg_temperature+' °C');
+          $('#avg_temperature_value').parent().css('background-color', temperature_color(response.avg_temperature));
+
+          if ((response.timestamp - last_update_time) > 60 * 60 * 2.5) {
+
+            last_update_time = response.timestamp;
+            myLineChart.addData([response.temperature], time_converter(response.timestamp));
+            // Remove the first point so we dont just add values forever
+            myLineChart.removeData();
+          }
+
+        }
+        setTimeout(pollServerForData, 1000);
+      });
+    };
+
+    setTimeout(pollServerForData, 1000);
