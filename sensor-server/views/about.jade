@@ -5,19 +5,21 @@ block content
   p I’m nameless project made by two MSc students - Igor Suleymanov and Elena Bondarenko.
   p
   i What do I do?
-  p I collect data from temperature and pressure sensors, store them in Redis and provide user an interface to watch the data on my fancy pages.
+  p I collect data from temperature and pressure sensors, store them in Redis and provide a user interface to browse through the data on my fancy pages.
 
-  p I was made up using:
+  p I was built up using:
   ul
     li Hardware:
-
+      ul
+        li Raspberry Pi model B
+        li Element14 MEMS Sensor Evaluation Board
     li Software:
       ul
         li Raspbian OS
-        li C library for getting data from sensors
-        li Python daemon are running every 10 seconds (configurable), getting data from sensors and writing it to Redis
         li Redis (open source, BSD licensed, advanced key-value cache and store)
-        li Node.js webserver
+        li Python-compatible C library for talking to sensors
+        li Python daemon to collect data from sensors and store it in Redis
+        li Node.js based web-application
         li Semantic UI
 
 

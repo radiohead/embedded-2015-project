@@ -294,8 +294,8 @@ router.get('/about', function(req, res, next) {
 });
 
 router.get('/errors', function(req, res, next) {
-  // fs.readFile('/var/log/sensor-daemon.log', 'utf8', function (err, data) {
-  fs.readFile('/var/log/dpkg.log', 'utf8', function(err, data) {
+  fs.readFile('/var/log/sensor-daemon.log', 'utf8', function (err, data) {
+  // fs.readFile('/var/log/dpkg.log', 'utf8', function(err, data) {
     if (err) {
       return console.log(err);
     }
